@@ -18,16 +18,35 @@ logging.basicConfig(
     ]
 )
 
-# Download historical data for TSLA, BND, and SPY
-tickers = ['TSLA', 'BND', 'SPY']
-data = yf.download(tickers, start="2015-01-01", end="2023-01-01", group_by='ticker')
+logger = logging.getLogger(__name__)
 
-# Save each ticker's data to separate CSV files
-for ticker in tickers:
-    # Extract data for this ticker
-    ticker_data = data[ticker]
+try:
+    logger.info("Starting data download process")
     
-    # Save to CSV
-    filename = f'{ticker}_historical_data.csv'
-    ticker_data.to_csv(filename)
-    print(f'Saved {filename}')
+    # Download historical data for TSLA, BND, and SPY
+    tickers = ['TSLA', 'BND', 'SPY']
+    logger.info(f"Downloading data for tickers: {', '.join(tickers)}")
+    
+    data = yf.download(tickers, start="2015-01-01", end="2023-01-01", group_by='ticker')
+    logger.info("Data download completed successfully")
+
+    # Save each ticker's data to separate CSV files
+    for ticker in tickers:
+        try:
+            # Extract data for this ticker
+            ticker_data = data[ticker]
+            
+            # Save to CSV
+            filename = f'{ticker}_historical_data.csv'
+            ticker_data.to_csv(filename)
+            logger.info(f'Successfully saved {filename}')
+            
+        except Exception as e:
+            logger.error(f'Error saving data for {ticker}: {str(e)}')
+
+except Exception as e:
+    logger.error(f"An error occurred during execution: {str(e)}")
+    raise
+
+finally:
+    logger.info("Process completed")
