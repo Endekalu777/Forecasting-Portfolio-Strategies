@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+from IPython.display import display
 
 # Create log folder if it doesnot exist
 log_directory = "../logs"
@@ -35,3 +36,23 @@ class DataHandler:
             logging.error(f"Error loading data from {self.filepath}: {e}")
             raise
         return self.df
+    
+    def process_data(self):
+        try:
+            logging.info("Starting data processing.")
+            
+            # Display the first few rows of the DataFrame
+            display(self.df.head())
+            logging.info("Displayed the first few rows of the DataFrame.")
+            
+            # Display the count of missing values
+            missing_values = self.df.isnull().sum()
+            display(missing_values)
+            logging.info(f"Displayed missing values count:\n{missing_values}")
+        
+        except Exception as e:
+            logging.error(f"Error processing data: {e}")
+            raise
+        
+
+
