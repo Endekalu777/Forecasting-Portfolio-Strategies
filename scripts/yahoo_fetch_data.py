@@ -8,7 +8,7 @@ if not os.path.exists("../logs"):
     os.makedirs("../logs")
 
 # Configure logging
-log_filename = os.path.join('logs', f'stock_data_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log')
+log_filename = os.path.join('../logs', f'stock_data_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log')
 
 logging.basicConfig(
     level=logging.INFO,
@@ -35,9 +35,13 @@ try:
         try:
             # Extract data for this ticker
             ticker_data = data[ticker]
-            
+
+            # Create a data folder if it doesnot exist
+            if not os.path.exists("../data"):
+                os.makedirs("../data")
+
             # Save to CSV
-            filename = f'{ticker}_historical_data.csv'
+            filename = f'../data/{ticker}_historical_data.csv'
             ticker_data.to_csv(filename)
             logger.info(f'Successfully saved {filename}')
             
