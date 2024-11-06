@@ -53,6 +53,23 @@ class DataHandler:
         except Exception as e:
             logging.error(f"Error processing data: {e}")
             raise
-        
+
+    def normalize_data(self):
+        """Standardizes numerical columns in the data."""
+        if self.df is not None:
+            try:
+                numerical_columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+                self.df[numerical_columns] = self.scaler.fit_transform(self.df[numerical_columns])
+                logging.info("Data normalized successfully.")
+            except KeyError as e:
+                logging.error(f"Error in normalization, missing expected columns: {e}")
+                raise
+            except Exception as e:
+                logging.error(f"Unexpected error during normalization: {e}")
+                raise
+        else:
+            logging.warning("No data to normalize. Please load and clean data before attempting to normalize it.")
+            raise ValueError("No data loaded.")
+        return self.data
 
 
