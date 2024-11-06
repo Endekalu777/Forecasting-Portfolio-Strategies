@@ -70,6 +70,7 @@ class DataHandler:
         else:
             logging.warning("No data to normalize. Please load and clean data before attempting to normalize it.")
             raise ValueError("No data loaded.")
-        return self.data
+        return self.df
+    
 
 
