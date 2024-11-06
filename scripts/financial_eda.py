@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+from statsmodels.tsa.seasonal import seasonal_decompose
+import numpy as np
 
 class FinancialEDA:
     def __init__(self, filepath):
@@ -41,3 +43,21 @@ class FinancialEDA:
         plt.ylabel('Price')
         plt.legend()
         plt.show()
+
+    def trend_seasonality_decomposition(self):
+        """Performs time series decomposition into trend, seasonality, and residuals."""
+        result = seasonal_decompose(self.df['Close'], model='multiplicative', period=365)
+        result.plot()
+        plt.show()
+
+    def risk_metrics(self):
+        """Calculates Value at Risk (VaR) and Sharpe Ratio."""
+        daily_change = self.df['Daily Change'].dropna()
+        
+        # Calculate 95% VaR
+        var_95 = np.percentile(daily_change, 5)
+        print(f"95% Value at Risk (VaR): {var_95}")
+
+        # Calculate Sharpe Ratio (assuming risk-free rate is 0)
+        sharpe_ratio = daily_change.mean() / daily_change.std()
+        print(f"Sharpe Ratio: {sharpe_ratio}")
