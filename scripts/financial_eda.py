@@ -26,3 +26,18 @@ class FinancialEDA:
         plt.ylabel('Percentage Change')
         plt.legend()
         plt.show()
+
+    def rolling_stats(self, window=30):
+        """Calculates and plots rolling mean and standard deviation."""
+        self.df['Rolling Mean'] = self.df['Close'].rolling(window=window).mean()
+        self.df['Rolling Std'] = self.df['Close'].rolling(window=window).std()
+        plt.figure(figsize=(12, 6))
+        plt.plot(self.df['Close'], label='Close Price')
+        plt.plot(self.df['Rolling Mean'], label=f'{window}-Day Rolling Mean')
+        plt.fill_between(self.df.index, self.df['Rolling Mean'] - self.df['Rolling Std'], 
+                         self.df['Rolling Mean'] + self.df['Rolling Std'], color='b', alpha=0.2)
+        plt.title(f'Rolling Mean and Standard Deviation ({window}-day)')
+        plt.xlabel('Date')
+        plt.ylabel('Price')
+        plt.legend()
+        plt.show()
