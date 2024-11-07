@@ -68,4 +68,20 @@ class TimeSeriesForecaster:
         except Exception as e:
             logging.error(f"Error in parameter optimization: {e}")
             raise
+
+    def train_model(self):
+        """Train the SARIMA model with the best parameters."""
+        try:
+            order = self.best_params['order']
+            seasonal_order = self.best_params['seasonal_order']
+            
+            self.model = SARIMAX(self.train,
+                                order=order,
+                                seasonal_order=seasonal_order)
+            
+            self.fitted_model = self.model.fit()
+            logging.info("Model training completed successfully")
+        except Exception as e:
+            logging.error(f"Error training model: {e}")
+            raise
     
