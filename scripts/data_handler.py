@@ -24,7 +24,7 @@ logging.basicConfig(
 class DataHandler:
     def __init__(self, filepath):
         self.filepath = filepath
-        self.data = None
+        self.df = None
         self.scaler = StandardScaler()
 
     def load_data(self):
