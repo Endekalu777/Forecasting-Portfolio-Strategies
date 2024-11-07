@@ -2,6 +2,8 @@ import logging
 import os
 from datetime import datetime
 import pandas as pd
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+from pmdarima import auto_arima
 
 # Create log folder if it does not exist
 log_directory = "../logs"
@@ -43,4 +45,27 @@ class TimeSeriesForecaster:
             logging.error(f"Error splitting data: {e}")
             raise
 
+    def find_best_parameters(self):
+        """Find the best SARIMA parameters using auto_arima."""
+        try:
+            logging.info("Starting parameter optimization with auto_arima")
+            model = auto_arima(self.train,
+                             seasonal=True,
+                             m=5,  # Weekly seasonality
+                             start_p=0, start_q=0,
+                             max_p=3, max_q=3,
+                             start_P=0, start_Q=0,
+                             max_P=2, max_Q=2,
+                             d=1, D=1,
+                             trace=True,
+                             error_action='ignore',
+                             suppress_warnings=True,
+                             stepwise=True)
+            
+            self.best_params = model.get_params()
+            logging.info(f"Best parameters found: {self.best_params}")
+            return self.best_params
+        except Exception as e:
+            logging.error(f"Error in parameter optimization: {e}")
+            raise
     
