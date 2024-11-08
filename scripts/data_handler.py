@@ -4,6 +4,7 @@ from datetime import datetime
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from IPython.display import display
+import joblib
 
 # Create log folder if it doesnot exist
 log_directory = "../logs"
@@ -73,4 +74,12 @@ class DataHandler:
         return self.df
     
 
+    def save_scaler(self, scaler_filename):
+        """Saves the fitted scaler to a file."""
+        try:
+            joblib.dump(self.scaler, scaler_filename)
+            logging.info(f"Scaler saved successfully to {scaler_filename}")
+        except Exception as e:
+            logging.error(f"Error saving scaler: {e}")
+            raise
 
