@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 import pandas as pd
 import numpy as np
+from pmdarima import auto_arima
 
 # Create log folder if it does not exist
 log_directory = "../logs"
@@ -57,3 +58,20 @@ class TimeSeriesForecaster:
             xs.append(data[i:(i + seq_length)])
             ys.append(data[i + seq_length])
         return np.array(xs), np.array(ys)
+    
+    def train_arima(self):
+        """Train ARIMA model"""
+        try:
+            logging.info("Training ARIMA model")
+            model = auto_arima(self.train, seasonal=False,
+                             start_p=0, start_q=0,
+                             max_p=5, max_q=5,
+                             d=1, trace=True,
+                             error_action='ignore',
+                             suppress_warnings=True)
+            
+            self.models['ARIMA'] = model
+            logging.info(f"ARIMA model trained with parameters: {model.get_params()}")
+        except Exception as e:
+            logging.error(f"Error in ARIMA training: {e}")
+            raise
