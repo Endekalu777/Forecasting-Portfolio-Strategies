@@ -2,6 +2,7 @@ import os
 import logging
 from datetime import datetime
 import pandas as pd
+import numpy as np
 
 # Create log folder if it does not exist
 log_directory = "../logs"
@@ -37,3 +38,22 @@ class TimeSeriesForecaster:
         except Exception as e:
             logging.error(f"Failed to load data: {e}")
             raise
+
+    def split_data(self, train_size=0.8):
+        """Splits data into training and test sets."""
+        try:
+            split_index = int(len(self.df) * train_size)
+            self.train = self.df[:split_index]
+            self.test = self.df[split_index:]
+            logging.info(f"Data split into train ({len(self.train)}) and test ({len(self.test)}) sets")
+        except Exception as e:
+            logging.error(f"Error in data splitting: {e}")
+            raise
+
+    def create_sequences(self, data, seq_length):
+        """Create sequences for LSTM model"""
+        xs, ys = [], []
+        for i in range(len(data) - seq_length):
+            xs.append(data[i:(i + seq_length)])
+            ys.append(data[i + seq_length])
+        return np.array(xs), np.array(ys)
