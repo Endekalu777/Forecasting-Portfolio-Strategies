@@ -75,3 +75,25 @@ class TimeSeriesForecaster:
         except Exception as e:
             logging.error(f"Error in ARIMA training: {e}")
             raise
+
+    def train_sarima(self, seasonal_period=5):
+        """Train SARIMA model"""
+        try:
+            logging.info("Training SARIMA model")
+            model = auto_arima(self.train,
+                             seasonal=True,
+                             m=seasonal_period,
+                             start_p=0, start_q=0,
+                             max_p=3, max_q=3,
+                             start_P=0, start_Q=0,
+                             max_P=2, max_Q=2,
+                             d=1, D=1,
+                             trace=True,
+                             error_action='ignore',
+                             suppress_warnings=True)
+            
+            self.models['SARIMA'] = model
+            logging.info(f"SARIMA model trained with parameters: {model.get_params()}")
+        except Exception as e:
+            logging.error(f"Error in SARIMA training: {e}")
+            raise
