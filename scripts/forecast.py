@@ -45,7 +45,7 @@ class MarketTrendAnalyzer:
             print(f"Error loading historical data from {historical_data_path}: {e}")
             raise
 
-    def generate_forecast(self):
+    def generate_forecast(self, save_path=None):
         # Scale the input data
         scaled_data = self.scaler.transform(self.historical_data[['Close']]).flatten()
         
@@ -72,7 +72,7 @@ class MarketTrendAnalyzer:
         z_score = stats.norm.ppf((1 + self.confidence_level) / 2)
         
         # Time decay factor for increasing uncertainty
-        time_decay = np.linspace(1, 1.5, num=self.forecast_periods)  # Adjust growth factor as needed
+        time_decay = np.linspace(1, 1.5, num=self.forecast_periods)
         confidence_intervals = {
             'lower': forecasted_prices - (z_score * forecast_std * forecasted_prices * time_decay),
             'upper': forecasted_prices + (z_score * forecast_std * forecasted_prices * time_decay)
@@ -81,12 +81,19 @@ class MarketTrendAnalyzer:
         forecast_dates = pd.date_range(start=self.historical_data['Date'].max() + timedelta(days=1), 
                                     periods=self.forecast_periods, freq='D')
 
-        return pd.DataFrame({
+        forecast_df = pd.DataFrame({
             'Date': forecast_dates,
             'Forecast': forecasted_prices,
             'Lower_CI': confidence_intervals['lower'],
             'Upper_CI': confidence_intervals['upper']
         })
+
+        # Save the forecast to a CSV file if save_path is provided
+        if save_path:
+            forecast_df.to_csv(save_path, index=False)
+            print(f"Forecast saved to {save_path}")
+
+        return forecast_df
 
     def plot_forecast(self):
         """Plot historical data, forecast, and confidence intervals."""
