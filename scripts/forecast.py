@@ -10,9 +10,11 @@ from tensorflow.keras.models import load_model
 class MarketTrendAnalyzer:
     def __init__(self, model_path, scaler_path, historical_data_path):
         self.model = self.load_model(model_path)
+        self.scaler = self.load_scaler(scaler_path)
         self.historical_data = self.load_historical_data(historical_data_path)
-        self.forecast_periods = 180  # Default forecast period
-        self.confidence_level = 0.95  # Default confidence level
+        self.forecast_periods = 180
+        self.confidence_level = 0.95
+        self.seq_length = 90
         
     def load_model(self, model_path):
         """Load and return the pre-trained model."""
@@ -25,8 +27,16 @@ class MarketTrendAnalyzer:
             print(f"Error loading model from {model_path}: {e}")
             raise
     
+    def load_scaler(self, scaler_path):
+        try:
+            scaler = joblib.load(scaler_path)
+            print(f"Scaler successfully loaded from {scaler_path}")
+            return scaler
+        except Exception as e:
+            print(f"Error loading scaler from {scaler_path}: {e}")
+            raise
+    
     def load_historical_data(self, historical_data_path):
-        """Load historical stock data."""
         try:
             data = pd.read_csv(historical_data_path)
             data['Date'] = pd.to_datetime(data['Date'])
@@ -36,36 +46,40 @@ class MarketTrendAnalyzer:
             raise
 
     def generate_forecast(self):
-        """Generate forecasted stock prices with confidence intervals."""
-        # Prepare data for forecasting
+        # Scale the input data
+        scaled_data = self.scaler.transform(self.historical_data[['Close']]).flatten()
+        
+        # Prepare initial sequence
+        last_sequence = scaled_data[-self.seq_length:].reshape(-1)
         scaled_forecast = []
-        seq_length = 90  # Model sequence length
-        close_prices_scaled = self.historical_data['Close'].values[-seq_length:]
         
         # Generate forecasted values
-        for _ in range(self.forecast_periods):
-            input_seq_reshaped = close_prices_scaled.reshape(1, seq_length, 1)
-            pred = self.model.predict(input_seq_reshaped)[0, 0]
+        current_sequence = last_sequence.copy()
+        for t in range(self.forecast_periods):
+            input_seq = current_sequence.reshape(1, self.seq_length, 1)
+            pred = self.model.predict(input_seq, verbose=0)[0, 0]
             scaled_forecast.append(pred)
-            close_prices_scaled = np.append(close_prices_scaled[1:], pred).reshape(seq_length)
-
-        # Calculate conservative confidence intervals based on historical volatility
+            current_sequence = np.roll(current_sequence, -1)
+            current_sequence[-1] = pred
+        
+        # Reshape and inverse transform the forecasted values
+        scaled_forecast = np.array(scaled_forecast).reshape(-1, 1)
+        forecasted_prices = self.scaler.inverse_transform(scaled_forecast).flatten()
+        
+        # Calculate confidence intervals with time-decay factor
+        last_known_price = self.historical_data['Close'].iloc[-1]
         forecast_std = np.std(self.historical_data['Close'].pct_change().dropna())
         z_score = stats.norm.ppf((1 + self.confidence_level) / 2)
-
-        last_known_price = self.historical_data['Close'].iloc[-1]
-        max_allowed_price = last_known_price * 1.15  # Max 15% increase
-        min_allowed_price = last_known_price * 0.85  # Max 15% decrease
-        forecasted_prices = np.clip(scaled_forecast, min_allowed_price, max_allowed_price)
-
-        # Generate forecast dates and confidence intervals
-        last_date = self.historical_data['Date'].max()
-        forecast_dates = pd.date_range(start=last_date + timedelta(days=1), periods=self.forecast_periods, freq='D')
         
+        # Time decay factor for increasing uncertainty
+        time_decay = np.linspace(1, 1.5, num=self.forecast_periods)  # Adjust growth factor as needed
         confidence_intervals = {
-            'lower': np.maximum(forecasted_prices - (z_score * forecast_std * last_known_price), min_allowed_price),
-            'upper': np.minimum(forecasted_prices + (z_score * forecast_std * last_known_price), max_allowed_price)
+            'lower': forecasted_prices - (z_score * forecast_std * forecasted_prices * time_decay),
+            'upper': forecasted_prices + (z_score * forecast_std * forecasted_prices * time_decay)
         }
+
+        forecast_dates = pd.date_range(start=self.historical_data['Date'].max() + timedelta(days=1), 
+                                    periods=self.forecast_periods, freq='D')
 
         return pd.DataFrame({
             'Date': forecast_dates,
