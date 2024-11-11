@@ -31,6 +31,7 @@ class TimeSeriesForecaster:
         self.filepath = filepath
         self.column = column
         self.df = self._load_data()
+        self.data_df = pd.read_csv(self.filepath)
         self.train = None
         self.test = None
         self.models = {}
@@ -209,14 +210,27 @@ class TimeSeriesForecaster:
 
     def plot_results(self):
         """Plot results for all models"""
-        plt.figure(figsize=(10, 6))
-        plt.plot(self.test.index, self.test, label='Actual Data')
-        
-        for model_name, predictions in self.predictions.items():
-            plt.plot(self.test.index, predictions, label=f'{model_name} Predictions')
+        # Ensure 'Date' is in datetime format
+        self.data_df['Date'] = pd.to_datetime(self.data_df['Date'])
 
+        # Create the plot
+        plt.figure(figsize=(10, 6))
+
+        # Plot the actual data (test data) using the Date column from data_df
+        plt.plot(self.data_df['Date'].iloc[-len(self.test):], self.test, label='Actual Data')
+        
+        # Plot predictions from all models
+        for model_name, predictions in self.predictions.items():
+            # Plot predictions using the 'Date' column from data_df
+            plt.plot(self.data_df['Date'].iloc[-len(self.test):], predictions, label=f'{model_name} Predictions')
+
+        # Set plot title and labels
         plt.title("Model Predictions vs Actual Data")
+        plt.xlabel("Date")
+        plt.ylabel("Value")
         plt.legend()
+
+        # Show plot
         plt.show()
     
     def forecast_future(self, periods=30):
