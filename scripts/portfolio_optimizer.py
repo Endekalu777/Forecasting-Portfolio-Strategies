@@ -37,3 +37,10 @@ class PortfolioOptimizer:
         combined_df.set_index('Date', inplace=True)
         logging.info("Forecast data combined successfully.")
         return combined_df
+    
+    def calculate_daily_returns(self):
+        """Calculate daily returns for each asset in the forecast dataframe."""
+        logging.info("Calculating daily returns.")
+        daily_returns = self.forecast_df.pct_change().dropna()
+        logging.info("Daily returns calculated.")
+        return daily_returns
