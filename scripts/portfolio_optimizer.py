@@ -84,3 +84,37 @@ class PortfolioOptimizer:
         max_sharpe_ratio = -result.fun
         logging.info(f"Optimization completed. Optimized Weights: {optimized_weights}, Max Sharpe Ratio: {max_sharpe_ratio:.4f}")
         return optimized_weights, max_sharpe_ratio
+
+    def plot_portfolio_performance(self, optimized_weights):
+        """Plot daily and cumulative returns of the optimized portfolio vs individual assets."""
+        logging.info("Plotting portfolio performance.")
+        daily_returns = self.calculate_daily_returns()
+        optimized_portfolio_daily_return = (daily_returns * optimized_weights).sum(axis=1)
+        cumulative_returns = (1 + daily_returns).cumprod()
+        optimized_portfolio_cumulative_return = (1 + optimized_portfolio_daily_return).cumprod()
+
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+
+        # Plot daily returns on the first subplot
+        ax1.plot(daily_returns.index, optimized_portfolio_daily_return, color='purple', label='Optimized Portfolio (Daily Return)')
+        for column in daily_returns.columns:
+            ax1.plot(daily_returns.index, daily_returns[column], label=f'{column} (Daily Return)', linestyle='--')
+        ax1.set_title('Daily Returns of Optimized Portfolio vs Individual Assets')
+        ax1.set_xlabel('Date')
+        ax1.set_ylabel('Daily Return')
+        ax1.legend()
+        ax1.grid(True)
+
+        # Plot cumulative returns on the second subplot
+        ax2.plot(cumulative_returns.index, optimized_portfolio_cumulative_return, color='purple', label='Optimized Portfolio (Cumulative Return)')
+        for column in cumulative_returns.columns:
+            ax2.plot(cumulative_returns.index, cumulative_returns[column], label=f'{column} (Cumulative Return)', linestyle='--')
+        ax2.set_title('Cumulative Returns of Optimized Portfolio vs Individual Assets')
+        ax2.set_xlabel('Date')
+        ax2.set_ylabel('Cumulative Return')
+        ax2.legend()
+        ax2.grid(True)
+
+        plt.tight_layout()
+        plt.show()
+        logging.info("Portfolio performance plot generated.")
