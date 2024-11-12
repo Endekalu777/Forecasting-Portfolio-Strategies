@@ -1,3 +1,6 @@
+# Project Overview
+In this project, I applied time series forecasting to historical financial data to enhance portfolio management strategies. I extracted financial data, such as stock prices and market indices, using YFinance, and analyzed it to identify trends. I developed forecasting models to predict market movements and used these insights to recommend portfolio adjustments aimed at optimizing returns and managing risks.
+
 # Project Structure
 The project structure is organized as follows:
 
