@@ -44,3 +44,12 @@ class PortfolioOptimizer:
         daily_returns = self.forecast_df.pct_change().dropna()
         logging.info("Daily returns calculated.")
         return daily_returns
+
+    def portfolio_performance(self, weights, daily_returns):
+        """Calculate portfolio return and volatility (standard deviation)."""
+        logging.info("Calculating portfolio performance.")
+        portfolio_return = np.sum(daily_returns.mean() * weights) * self.annual_trading_days
+        portfolio_variance = np.dot(weights.T, np.dot(daily_returns.cov() * self.annual_trading_days, weights))
+        portfolio_volatility = np.sqrt(portfolio_variance)
+        logging.info(f"Portfolio performance calculated: Return = {portfolio_return:.4f}, Volatility = {portfolio_volatility:.4f}")
+        return portfolio_return, portfolio_volatility
