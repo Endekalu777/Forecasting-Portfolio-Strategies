@@ -53,3 +53,10 @@ class PortfolioOptimizer:
         portfolio_volatility = np.sqrt(portfolio_variance)
         logging.info(f"Portfolio performance calculated: Return = {portfolio_return:.4f}, Volatility = {portfolio_volatility:.4f}")
         return portfolio_return, portfolio_volatility
+
+    def calculate_sharpe_ratio(self, weights, daily_returns):
+        """Objective function to maximize Sharpe Ratio."""
+        portfolio_return, portfolio_volatility = self.portfolio_performance(weights, daily_returns)
+        sharpe_ratio = (portfolio_return - self.risk_free_rate) / portfolio_volatility
+        logging.info(f"Calculated Sharpe Ratio: {sharpe_ratio:.4f}")
+        return -sharpe_ratio  
