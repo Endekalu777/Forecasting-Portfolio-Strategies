@@ -1,7 +1,10 @@
 import os
-import logging 
-from datetime import datetime
+import logging
+import pandas as pd 
 import numpy as np
+from scipy.optimize import minimize
+import matplotlib.pyplot as plt
+from datetime import datetime
 
 # Setup logging
 log_directory = "../logs"
@@ -60,3 +63,24 @@ class PortfolioOptimizer:
         sharpe_ratio = (portfolio_return - self.risk_free_rate) / portfolio_volatility
         logging.info(f"Calculated Sharpe Ratio: {sharpe_ratio:.4f}")
         return -sharpe_ratio  
+    
+    def optimize_portfolio(self):
+        """Optimize portfolio to maximize Sharpe Ratio."""
+        logging.info("Starting portfolio optimization to maximize Sharpe Ratio.")
+        daily_returns = self.calculate_daily_returns()
+        constraints = ({'type': 'eq', 'fun': lambda weights: np.sum(weights) - 1})
+        bounds = tuple((0, 1) for _ in range(len(self.initial_weights)))
+
+        result = minimize(
+            self.calculate_sharpe_ratio, 
+            self.initial_weights, 
+            args=(daily_returns,),
+            method='SLSQP', 
+            bounds=bounds, 
+            constraints=constraints
+        )
+
+        optimized_weights = result.x
+        max_sharpe_ratio = -result.fun
+        logging.info(f"Optimization completed. Optimized Weights: {optimized_weights}, Max Sharpe Ratio: {max_sharpe_ratio:.4f}")
+        return optimized_weights, max_sharpe_ratio
