@@ -23,3 +23,17 @@ class PortfolioOptimizer:
         self.initial_weights = np.array([0.33, 0.33, 0.34])  
         self.risk_free_rate = 0.03  
         logging.info("PortfolioOptimizer initialized.")
+
+    def combine_forecasts(self, tsla_df, bnd_df, spy_df):
+        """Combine forecast dataframes into one with columns TSLA, BND, SPY."""
+        logging.info("Combining forecast dataframes for TSLA, BND, and SPY.")
+        combined_df = pd.DataFrame({
+            'Date': tsla_df['Date'],
+            'TSLA': tsla_df['Forecast'],
+            'BND': bnd_df['Forecast'],
+            'SPY': spy_df['Forecast']
+        })
+        combined_df['Date'] = pd.to_datetime(combined_df['Date'])
+        combined_df.set_index('Date', inplace=True)
+        logging.info("Forecast data combined successfully.")
+        return combined_df
